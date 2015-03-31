@@ -3,3 +3,9 @@ path:
   logs: /data/log
   plugins: /data/plugins
   work: /data/work
+
+# Avoid the kernel from stealing our memory, http://www.elastic.co/guide/en/elasticsearch/reference/master/setup-configuration.html#setup-configuration-memory
+bootstrap.mlockall: true
+
+# Make room for newer indices, see http://www.elastic.co/guide/en/elasticsearch/guide/current/_limiting_memory_usage.html#fielddata-size
+indices.fielddata.cache.size: 40%

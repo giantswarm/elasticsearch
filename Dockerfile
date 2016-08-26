@@ -1,36 +1,36 @@
-#
 # Elasticsearch Dockerfile
 #
-# https://github.com/dockerfile/elasticsearch
+#     https://github.com/dockerfile/elasticsearch
 #
+FROM openjdk:8-jre
 
-# Pull base image.
-FROM dockerfile/java:oracle-java8
+ENV ELASTICSEARCH_VERSION 2.3.5
+ENV PATH /usr/share/elasticsearch/bin:$PATH
 
-ENV ES_PKG_NAME elasticsearch-1.4.3
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/setup-repositories.html
+# https://packages.elasticsearch.org/GPG-KEY-elasticsearch
+RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys 46095ACC8548582C1A2699A9D27D666CD88E42B4
+RUN echo "deb http://packages.elasticsearch.org/elasticsearch/2.x/debian stable main" > /etc/apt/sources.list.d/elasticsearch.list
+RUN set -x \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends elasticsearch=$ELASTICSEARCH_VERSION \
+  && rm -rf /var/lib/apt/lists/*
+RUN set -ex \
+  && for path in \
+    /usr/share/elasticsearch/data \
+    /usr/share/elasticsearch/logs \
+    /usr/share/elasticsearch/config \
+    /usr/share/elasticsearch/config/scripts \
+  ; do \
+    mkdir -p "$path"; \
+    chown -R elasticsearch:elasticsearch "$path"; \
+  done
 
-# Install Elasticsearch.
-RUN \
-  cd / && \
-  wget https://download.elasticsearch.org/elasticsearch/elasticsearch/$ES_PKG_NAME.tar.gz && \
-  tar xvzf $ES_PKG_NAME.tar.gz && \
-  rm -f $ES_PKG_NAME.tar.gz && \
-  mv /$ES_PKG_NAME /elasticsearch
+ADD config/elasticsearch.yml /usr/share/elasticsearch/config/elasticsearch.yml
 
-# Define mountable directories.
-VOLUME ["/data"]
+VOLUME /usr/share/elasticsearch/data
+USER elasticsearch
+WORKDIR /usr/share/elasticsearch
+EXPOSE 9200 9300
 
-# Mount elasticsearch.yml config
-ADD config/elasticsearch.yml /elasticsearch/config/elasticsearch.yml
-
-# Define working directory.
-WORKDIR /data
-
-# Define default command.
-CMD ["/elasticsearch/bin/elasticsearch"]
-
-# Expose ports.
-#   - 9200: HTTP
-#   - 9300: transport
-EXPOSE 9200
-EXPOSE 9300
+ENTRYPOINT ["elasticsearch"]

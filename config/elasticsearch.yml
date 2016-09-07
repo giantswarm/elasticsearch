@@ -1,5 +1,7 @@
 path:
-  data: /data/data
-  logs: /data/log
-  plugins: /data/plugins
-  work: /data/work
+  data: /usr/share/elasticsearch/data
+  logs: /usr/share/elasticsearch/logs
+  plugins: /usr/share/elasticsearch/plugins
+  work: /usr/share/elasticsearch/work
+cluster:
+  name: elk
